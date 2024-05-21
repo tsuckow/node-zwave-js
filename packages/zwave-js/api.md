@@ -96,6 +96,8 @@ import { MulticastCC } from '@zwave-js/core';
 import { MulticastDestination } from '@zwave-js/core/safe';
 import { MultilevelSwitchCommand } from '@zwave-js/cc/safe';
 import { NODE_ID_BROADCAST } from '@zwave-js/core/safe';
+import { NODE_ID_BROADCAST as NODE_ID_BROADCAST_2 } from '@zwave-js/core';
+import { NODE_ID_BROADCAST_LR } from '@zwave-js/core';
 import { NODE_ID_MAX } from '@zwave-js/core/safe';
 import { NodeIDType } from '@zwave-js/core';
 import type { NodeSchedulePollOptions } from '@zwave-js/host';
@@ -891,6 +893,11 @@ export type LongRangeFrame = {
     ackRequested: boolean;
     payload: Buffer | CommandClass;
 } | {
+    type: LongRangeFrameType.Broadcast;
+    destinationNodeId: typeof NODE_ID_BROADCAST_LR;
+    ackRequested: boolean;
+    payload: Buffer | CommandClass;
+} | {
     type: LongRangeFrameType.Ack;
     incomingRSSI: RSSI_2;
     payload: Buffer;
@@ -898,7 +905,7 @@ export type LongRangeFrame = {
 
 // Warning: (ae-missing-release-tag) "LongRangeFrameType" is part of the package's API, but it is missing a release tag (@alpha, @beta, @public, or @internal)
 //
-// @public
+// @public (undocumented)
 export enum LongRangeFrameType {
     // (undocumented)
     Ack = 1,
@@ -906,6 +913,8 @@ export enum LongRangeFrameType {
     BeamStart = 2,
     // (undocumented)
     BeamStop = 3,
+    // (undocumented)
+    Broadcast = 4,
     // (undocumented)
     Singlecast = 0
 }
@@ -1311,7 +1320,13 @@ export interface VirtualValueID extends TranslatedValueID_2 {
 // @public (undocumented)
 export class Zniffer extends TypedEventEmitter<ZnifferEventCallbacks> {
     constructor(port: string | ZWaveSerialPortImplementation, options?: ZnifferOptions);
+    get active(): boolean;
+    // Warning: (ae-forgotten-export) The symbol "CapturedFrame" needs to be exported by the entry point index.d.ts
+    get capturedFrames(): Readonly<CapturedFrame>[];
+    clearCapturedFrames(): void;
     get currentFrequency(): number | undefined;
+    destroy(): Promise<void>;
+    getCaptureAsZLFBuffer(): Buffer;
     // (undocumented)
     init(): Promise<void>;
     saveCaptureToFile(filePath: string): Promise<void>;
@@ -1331,6 +1346,7 @@ export interface ZnifferOptions {
     // Warning: (ae-unresolved-link) The @link reference could not be resolved: The package "zwave-js" does not have an export "ZnifferRegion"
     defaultFrequency?: number;
     logConfig?: Partial<LogConfig>;
+    maxCapturedFrames?: number;
     securityKeys?: ZWaveOptions["securityKeys"];
     securityKeysLongRange?: ZWaveOptions["securityKeysLongRange"];
 }
@@ -1421,6 +1437,7 @@ export class ZWaveController extends TypedEventEmitter<ControllerEventCallbacks>
         channel: LongRangeChannel;
         supportsAutoChannelSelection: boolean;
     }>;
+    getLongRangeNodes(): Promise<readonly number[]>;
     getMaxLongRangePowerlevel(): Promise<number>;
     getMulticastGroup(nodeIDs: number[]): VirtualNode;
     getNodeByDSK(dsk: Buffer | string): ZWaveNode | undefined;
@@ -1561,7 +1578,7 @@ export enum ZWaveFeature {
 
 // Warning: (ae-missing-release-tag) "ZWaveFrame" is part of the package's API, but it is missing a release tag (@alpha, @beta, @public, or @internal)
 //
-// @public (undocumented)
+// @public
 export type ZWaveFrame = {
     protocol: Protocols.ZWave;
     channel: number;
@@ -1596,6 +1613,11 @@ export type ZWaveFrame = {
     routedError: true;
     failedHop: number;
 })>) | {
+    type: ZWaveFrameType.Broadcast;
+    destinationNodeId: typeof NODE_ID_BROADCAST_2;
+    ackRequested: boolean;
+    payload: Buffer | CommandClass;
+} | {
     type: ZWaveFrameType.Multicast;
     destinationNodeIds: number[];
     payload: Buffer | CommandClass;
@@ -1614,6 +1636,7 @@ export type ZWaveFrame = {
 } | {
     type: ZWaveFrameType.ExplorerInclusionRequest;
     networkHomeId: number;
+    payload: Buffer | CommandClass;
 }) & {
     destinationNodeId: number;
     ackRequested: boolean;
@@ -1632,6 +1655,8 @@ export enum ZWaveFrameType {
     BeamStart = 6,
     // (undocumented)
     BeamStop = 7,
+    // (undocumented)
+    Broadcast = 8,
     // (undocumented)
     ExplorerInclusionRequest = 5,
     // (undocumented)
@@ -2068,6 +2093,7 @@ export interface ZWaveOptions extends ZWaveHostOptions {
     };
     rf?: {
         region?: RFRegion_2;
+        preferLRRegion?: boolean;
         txPower?: {
             powerlevel: number;
             measured0dBm: number;
@@ -2132,11 +2158,12 @@ export * from "@zwave-js/cc";
 // src/lib/driver/Driver.ts:5576:5 - (tsdoc-param-tag-missing-hyphen) The @param block should be followed by a parameter name and then a hyphen
 // src/lib/driver/Driver.ts:5577:5 - (tsdoc-param-tag-missing-hyphen) The @param block should be followed by a parameter name and then a hyphen
 // src/lib/driver/Driver.ts:5713:5 - (tsdoc-param-tag-missing-hyphen) The @param block should be followed by a parameter name and then a hyphen
-// src/lib/node/Node.ts:913:2 - (ae-missing-getter) The property "associations" has a setter but no getter.
-// src/lib/node/Node.ts:1004:2 - (ae-missing-getter) The property "deviceConfigHash" has a setter but no getter.
-// src/lib/node/Node.ts:2892:5 - (tsdoc-param-tag-missing-hyphen) The @param block should be followed by a parameter name and then a hyphen
-// src/lib/zniffer/Zniffer.ts:562:5 - (tsdoc-param-tag-missing-hyphen) The @param block should be followed by a parameter name and then a hyphen
-// src/lib/zniffer/Zniffer.ts:563:5 - (tsdoc-param-tag-missing-hyphen) The @param block should be followed by a parameter name and then a hyphen
+// src/lib/driver/ZWaveOptions.ts:273:120 - (tsdoc-escape-greater-than) The ">" character should be escaped using a backslash to avoid confusion with an HTML tag
+// src/lib/node/Node.ts:918:2 - (ae-missing-getter) The property "associations" has a setter but no getter.
+// src/lib/node/Node.ts:1009:2 - (ae-missing-getter) The property "deviceConfigHash" has a setter but no getter.
+// src/lib/node/Node.ts:2897:5 - (tsdoc-param-tag-missing-hyphen) The @param block should be followed by a parameter name and then a hyphen
+// src/lib/zniffer/Zniffer.ts:620:5 - (tsdoc-param-tag-missing-hyphen) The @param block should be followed by a parameter name and then a hyphen
+// src/lib/zniffer/Zniffer.ts:621:5 - (tsdoc-param-tag-missing-hyphen) The @param block should be followed by a parameter name and then a hyphen
 
 // (No @packageDocumentation comment for this package)
 

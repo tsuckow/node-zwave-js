@@ -10579,7 +10579,7 @@ export class ManufacturerSpecificCCGet extends ManufacturerSpecificCC {
 //
 // @public (undocumented)
 export class ManufacturerSpecificCCReport extends ManufacturerSpecificCC {
-    constructor(host: ZWaveHost_2, options: ManufacturerSpecificCCReportOptions | CommandClassDeserializationOptions);
+    constructor(host: ZWaveHost_2, options: (ManufacturerSpecificCCReportOptions & CCCommandOptions) | CommandClassDeserializationOptions);
     // (undocumented)
     readonly manufacturerId: number;
     // (undocumented)
@@ -10595,7 +10595,7 @@ export class ManufacturerSpecificCCReport extends ManufacturerSpecificCC {
 // Warning: (ae-missing-release-tag) "ManufacturerSpecificCCReportOptions" is part of the package's API, but it is missing a release tag (@alpha, @beta, @public, or @internal)
 //
 // @public (undocumented)
-export interface ManufacturerSpecificCCReportOptions extends CCCommandOptions {
+export interface ManufacturerSpecificCCReportOptions {
     // (undocumented)
     manufacturerId: number;
     // (undocumented)
@@ -20326,6 +20326,12 @@ export type WrapWithTXReport<T> = [T] extends [Promise<infer U>] ? Promise<WrapW
 //
 // @public (undocumented)
 export function ZWaveDataRate2DataRate(zdr: ZWaveDataRate_2): DataRate_2;
+
+// Warning: (ae-missing-release-tag) "ZWaveLongRangeCC" is part of the package's API, but it is missing a release tag (@alpha, @beta, @public, or @internal)
+//
+// @public (undocumented)
+export class ZWaveLongRangeCC extends CommandClass {
+}
 
 // Warning: (ae-missing-release-tag) "ZWavePlusCC" is part of the package's API, but it is missing a release tag (@alpha, @beta, @public, or @internal)
 //
